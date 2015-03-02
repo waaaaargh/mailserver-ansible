@@ -1,0 +1,19 @@
+- name: unpack roundcube mail
+  unarchive: src=roundcubemail-1.1.0-complete.tar.gz dest=/var/www/
+- name: move roundcube to /mail
+  command: creates=/var/www/mail mv /var/www/roundcubemail-1.1.0 /var/www/mail
+- name: create roundcube mysql db
+  mysql_db: name=roundcube state=present
+- name: create roundcube mysql user
+  mysql_user: name=roundcube password={{ mysql_roundcube_pw }}
+              priv=roundcube.*:ALL
+              state=present
+- name: impprt roundcube database schema
+  mysql_db: name=roundcube target=/var/www/mail/SQL/mysql.initial.sql state=import
+  ignore_errors: true
+- name: write roundcube config
+  template: src=config.inc.php dest=/var/www/mail/config/config.inc.php
+- name: write managesieve plugin config
+  template: src=managesieve-config.inc.php dest=/var/www/mail/plugins/config.inc.php
+- name: make config.inc.php writable
+  file: path=/var/www/mail/config/config.inc.php group=www-data mode='740'

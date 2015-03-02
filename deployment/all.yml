@@ -1,0 +1,11 @@
+---
+- hosts: all
+  sudo: yes
+  roles:
+  - update-upgrade
+  - lighttpd-php
+  - postfix-admin
+  - postfix
+  - dovecot
+  - mailman
+  - roundcube

@@ -1,0 +1,23 @@
+- name: ensure mailman is installed
+  apt: pkg={{ item }} state=installed
+  with_items:
+  - mailman
+- name: write mailman lighttpd config
+  template: src=mailman_lighttpd.conf
+            dest=/etc/lighttpd/sites.d/mailman.conf
+- name: restart lighttpd
+  service: name=lighttpd state=restarted
+- name: write mailman_config
+  template: src=mailman_config.py
+            dest=/etc/mailman/mm_cfg.py
+- name: set mailman instance password
+  command: /usr/lib/mailman/bin/mmsitepass {{ mailman_instance_pw }}
+- name: create initial mailman list
+  command: /usr/lib/mailman/bin/newlist -q mailman {{ admin_email_address }} {{ mailman_list_pw }}
+  ignore_errors: True
+- name: start mailman service
+  service: name=mailman state=started
+- name: create mailman transport file
+  template: src=transport dest=/etc/postfix/transport
+- name: postmap transport
+  command: postmap /etc/postfix/transport

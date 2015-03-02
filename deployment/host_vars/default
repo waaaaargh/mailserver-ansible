@@ -1,0 +1,14 @@
+mysql_root_pw: asdf
+mysql_postfixadmin_pw: asdfasdf
+host_name: mailtest.lan
+postfixadmin_setup_pw_hash: 987f874c07cf6bb570d174ebe72a9129:dd8d9b73e337135a945a994dd477a6ab20a6200c
+postfix_ssl_cert_subject: /C=DE/ST=Bavaria/L=Augsburg/O=Personal/CN={{ host_name }}
+postfix_ssl_cert_days: 730
+mysql_postfix_pw: asdf
+admin_email_address: johannes@weltraumpflege.org
+mysql_roundcube_pw: asdf
+
+mailman_list_pw: asdf
+mailman_instance_pw: asdf
+mailman_domains:
+  - lists.example.com

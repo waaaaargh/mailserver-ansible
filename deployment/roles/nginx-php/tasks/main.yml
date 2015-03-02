@@ -1,0 +1,11 @@
+---
+  - name: setup nginx
+    apt: pkg=nginx state=installed
+  - name: remove nginx default config
+    shell: rm /etc/nginx/sites-available/* && rm /etc/nginx/sites-enabled/*
+    register: shell_result
+    ignore_errors: True
+  - name: setup php5-fpm
+    apt: pkg=php5-fpm state=installed
+    notify:
+    - restart nginx

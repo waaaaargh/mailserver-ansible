@@ -1,0 +1,19 @@
+- name: ensure dovecot is installed
+  apt: pkg={{ item }} state=installed
+  with_items:
+  - dovecot-core
+  - dovecot-imapd
+  - dovecot-mysql
+  - dovecot-sieve
+  - dovecot-managesieved
+- name: write dovecot config
+  template: src={{ item }} dest=/etc/dovecot/
+  with_items:
+  - dovecot.conf
+  - dovecot-mysql.conf
+  notify:
+  - restart dovecot
+- name: enable sieve
+  template: src=sieve.conf dest=/etc/dovecot/conf.d/20-managesieve.conf
+  notify:
+  - restart dovecot

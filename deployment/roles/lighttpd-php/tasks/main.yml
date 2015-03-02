@@ -1,0 +1,26 @@
+---
+  - name: setup lighttpd
+    apt: pkg={{ item }} state=installed
+    with_items:
+      - lighttpd
+      - php5-fpm
+  - name: make lighttpd talk to php5-fpm correctly
+    copy: src=fastcgi-php.conf 
+          dest=/etc/lighttpd/conf-available/15-fastcgi-php.conf
+  - name: enable fcgi and  php modules
+    command: lighttpd-enable-mod {{ item }}
+    with_items:
+    - cgi
+    - fastcgi
+    - fastcgi-php
+    ignore_errors: true
+  - name: remove default index
+    shell: rm -r /var/www/*
+    ignore_errors: true
+  - name: create sites.d directory
+    file: path=/etc/lighttpd/sites.d state=directory
+  - name: enable sites.d
+    copy: src=lighttpd.conf
+          dest=/etc/lighttpd/lighttpd.conf
+  - name: restart lighttpd
+    service: name=lighttpd state=restarted

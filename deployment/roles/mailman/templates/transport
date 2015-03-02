@@ -1,0 +1,4 @@
+lists.{{ host_name }} mailman:
+{% for vdomain in mailman_domains %}
+{{ vdomain }} 	mailman:
+{% endfor %}

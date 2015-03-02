@@ -1,0 +1,18 @@
+upstream php {
+    server unix:/var/run/php5-fpm.sock;
+}
+
+server {
+    server_name asdf;
+
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/demoapp;
+
+    location ~* \.php$ {
+        include fastcgi_params;
+        fastcgi_pass php;
+        fastcgi_index index.php;
+    }
+}

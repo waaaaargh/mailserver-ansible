@@ -1,0 +1,54 @@
+- name: make sure postfix is installed
+  apt: pkg={{ item }} state=installed
+  with_items:
+  - postfix
+  - postfix-mysql
+  - spamassassin
+  - spamc
+- name: create ssl certificates
+  command: chdir=/etc/ssl creates=/etc/ssl/mail.key openssl req -new -nodes -x509 -subj "{{ postfix_ssl_cert_subject }}" -days {{ postfix_ssl_cert_days }} -keyout mail.key -out mail.crt
+- name: add vmail user
+  user: name=vmail state=present
+        home=/var/vmail
+        uid=5000
+        shell=/bin/false 
+- name: set mailname
+  shell: echo "{{ host_name }}" > /etc/mailname
+- name: create postfix transport file
+  command: creates=/etc/postfix/transport touch /etc/postfix/transport
+- name: postmap transport file
+  command: postmap /etc/postfix/transport
+- name: create postfix mysql user
+  mysql_user: name=postfix password={{ mysql_postfix_pw }} state=present
+              priv=postfix.*:ALL
+- name: write postfix config
+  template: src={{ item }} dest=/etc/postfix/ owner=root group=root
+  with_items:
+  - main.cf
+  - master.cf
+  - mysql_sender_login_maps.cf
+  - mysql_virtual_alias_maps.cf
+  - mysql_virtual_domains_maps.cf
+  - mysql_virtual_mailbox_maps.cf
+  notify:
+  - restart postfix
+- name: make postfix config accessible
+  file: path={{ item }} owner=root group=root mode=0644
+  with_items:
+  - /etc/postfix/main.cf
+  - /etc/postfix/master.cf
+  - /etc/postfix/mysql_sender_login_maps.cf
+  - /etc/postfix/mysql_virtual_alias_maps.cf
+  - /etc/postfix/mysql_virtual_domains_maps.cf
+  - /etc/postfix/mysql_virtual_mailbox_maps.cf
+  notify:
+  - restart postfix
+- name: create spamd group
+  group: name=spamd gid=5001 state=present
+- name: create spamd user
+  user: name=spamd uid=5001 shell=/bin/false home=/var/lib/mailman group=spamd
+        state=present
+- name: copy spamd config
+  template: src=spamassassin.default dest=/etc/default/spamassassin
+- name: start spamassassin
+  service: name=spamassassin state=started

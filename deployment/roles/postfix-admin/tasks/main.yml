@@ -1,0 +1,42 @@
+- name: install dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+  - php5-mysql
+  - php5-imap
+- name: enable php5-imap
+  command: php5enmod imap
+- name: restart php5-fpm
+  service: name=php5-fpm state=restarted
+- name: ensure /var/www is there and has proper attributes
+  file: path=/var/www owner=www-data group=www-data state=directory
+- name: get postfix-admin tarball
+  copy: src=postfixadmin-2.92.tar.gz
+        dest=/var/www
+- name: unpack postfixadmin
+  shell: cd /var/www && tar xzf postfixadmin-2.92.tar.gz
+- name: ensure postfixadmin is owned by www-data
+  file: path=/var/www/postfixadmin-2.92/
+        owner=www-data group=www-data
+        recurse=yes
+- name: move postfixadmin to admin directory
+  command: creates=/var/www/admin mv /var/www/postfixadmin-2.92 /var/www/admin
+#- name: copy lighttpd config file
+#  template: src=postfixadmin_nginx.conf
+#            dest=/etc/nginx/sites-available/postfixadmin
+#- name: activate postfixadmin nginx config
+#  file: src=/etc/nginx/sites-available/postfixadmin
+#        dest=/etc/nginx/sites-enabled/postfixadmin
+#        state=link
+#- name: restart nginx
+#  service: name=nginx state=restarted
+- name: create postfixadmin database
+  mysql_db: name=postfix state=present
+- name: create postfix-admin user and add privileges
+  mysql_user: name=postfixadmin state=present
+              password={{ mysql_postfixadmin_pw }}
+              priv=postfix.*:ALL
+- name: copy postfixadmin config
+  template: src=postfixadmin_config.php
+            dest=/var/www/admin/config.inc.php
+- name: tell postfixadmin to create databases (hacky)
+  command: wget -O /dev/null http://localhost/admin/setup.php

@@ -1,0 +1,5 @@
+- name: install mysql and required modules
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - mysql-server
+    - python-mysqldb
