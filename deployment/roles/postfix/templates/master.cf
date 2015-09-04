@@ -115,7 +115,7 @@ mailman   unix  -       n       n       -       -       pipe
   ${nexthop} ${user}
 
 dovecot   unix  -       n       n       -       -       pipe
-  flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -d ${recipient}
+  flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -a ${recipient} -d ${user}@${nexthop}
 
 spamassassin unix -     n       n       -       -       pipe
         user=spamd argv=/usr/bin/spamc -f -e
